@@ -77,7 +77,7 @@ public class Main extends JPanel {
             graphics.setColor(Color.GRAY);
             graphics.fillRect(cell.x + offsetX, cell.y + offsetY, CELL_SIZE, CELL_SIZE);
             graphics.setColor(Color.WHITE);
-            graphics.drawString(cell.x + ", " + cell.y, cell.x + offsetX, cell.y + offsetY);
+            //graphics.drawString(cell.x + ", " + cell.y, cell.x + offsetX, cell.y + offsetY);
         }
     }
 
@@ -157,8 +157,17 @@ public class Main extends JPanel {
             neighborArray[index] = neighbor;
             index++;
         }
+        int random = random(0, neighborArray.length - 1);
+        if (neighborArray.length != 0) {
+            Cell.OpenCells.add(neighborArray[random]);
 
-        Cell.OpenCells.add(neighborArray[random(0, neighborArray.length)]);
+            int dx = start.x - neighborArray[random].x;
+            int dy = start.y - neighborArray[random].y;
+
+            Point middle = new Point(neighborArray[random].x + dx / 2, neighborArray[random].y + dy / 2);
+            Cell.OpenCells.add(middle);
+            System.out.println("middle: " + middle);
+        }
 
         repaint();
     }
