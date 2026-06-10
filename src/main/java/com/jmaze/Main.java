@@ -27,7 +27,6 @@ public class Main extends JPanel {
 
     private int offsetX;
     private int offsetY;
-    private boolean FieldInitialed = false;
     private Point startCell;
     private Point GenHead;
 
@@ -184,7 +183,7 @@ public class Main extends JPanel {
 
             repaint();
             try {
-                Thread.sleep(speed);
+                Thread.sleep(SPEED);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
