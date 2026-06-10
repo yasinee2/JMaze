@@ -23,6 +23,7 @@ public class Main extends JPanel {
     protected final static int FIELD_WIDTH = 50;
     protected final static int FIELD_HEIGHT = 50;
     protected final static int CELL_SIZE = 20;
+    private final int SPEED = 5;
 
     private int offsetX;
     private int offsetY;
@@ -51,7 +52,7 @@ public class Main extends JPanel {
         drawField();
         if (startCell != null) {
             graphics.fillRect(startCell.x + offsetX, startCell.y + offsetY, CELL_SIZE, CELL_SIZE);
-            graphics.setColor(Color.RED);
+            graphics.setColor(Color.black);
             graphics.fillRect(GenHead.x + offsetX, GenHead.y + offsetY, CELL_SIZE, CELL_SIZE);
         }
     }
@@ -79,14 +80,14 @@ public class Main extends JPanel {
         }
 
         for (Point cell : Cell.cells) {
-            graphics.setColor(Color.GRAY);
+            graphics.setColor(Color.gray);
+            graphics.fillRect(cell.x + offsetX, cell.y + offsetY, CELL_SIZE, CELL_SIZE);
+            graphics.setColor(Color.darkGray);
             graphics.drawRect(cell.x + offsetX, cell.y + offsetY, CELL_SIZE, CELL_SIZE);
         }
         for (Point cell : Cell.OpenCells) {
-            graphics.setColor(Color.GRAY);
+            graphics.setColor(Color.darkGray);
             graphics.fillRect(cell.x + offsetX, cell.y + offsetY, CELL_SIZE, CELL_SIZE);
-            graphics.setColor(Color.WHITE);
-            //graphics.drawString(cell.x + ", " + cell.y, cell.x + offsetX, cell.y + offsetY);
         }
     }
 
@@ -165,7 +166,6 @@ public class Main extends JPanel {
             neighbors.removeIf(visited::contains);
 
             if (neighbors.isEmpty()) {
-                // Backtrack — Zellen bleiben offen
                 path.pop();
             } else {
                 int r = random(0, neighbors.size() - 1);
@@ -184,7 +184,7 @@ public class Main extends JPanel {
 
             repaint();
             try {
-                Thread.sleep(5);
+                Thread.sleep(speed);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
