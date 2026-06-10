@@ -2,12 +2,13 @@ package com.jmaze;
 
 import java.awt.Point;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class Cell {
 
     protected static Set<Point> cells = new HashSet<>();
-    protected static Set<Point> OpenCells = new HashSet<>();
+    protected static Set<Point> OpenCells = new LinkedHashSet<>();
     protected static Main main;
     private static final int size = main.CELL_SIZE;
     private static final int field_height = main.FIELD_HEIGHT;
@@ -16,7 +17,6 @@ public class Cell {
 
     protected Point position;
     protected boolean open = false;
-    protected Set<Cell> OpenNeighbors = new HashSet<>();
 
     protected void open(Point position) {
         OpenCells.add(position);

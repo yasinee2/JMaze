@@ -5,7 +5,11 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -23,8 +27,8 @@ public class Main extends JPanel {
     private int offsetX;
     private int offsetY;
     private boolean FieldInitialed = false;
-    private Cell startCell;
-    private Cell endCell;
+    private Point startCell;
+    private Point GenHead;
 
     public static void main(String[] args) {
         initWindow();
@@ -45,6 +49,11 @@ public class Main extends JPanel {
         offsetX = (getWidth() / 2) - (CELL_SIZE * FIELD_WIDTH) / 2;
         offsetY = (getHeight() / 2) - (CELL_SIZE * FIELD_HEIGHT) / 2;
         drawField();
+        if (startCell != null) {
+            graphics.fillRect(startCell.x + offsetX, startCell.y + offsetY, CELL_SIZE, CELL_SIZE);
+            graphics.setColor(Color.RED);
+            graphics.fillRect(GenHead.x + offsetX, GenHead.y + offsetY, CELL_SIZE, CELL_SIZE);
+        }
     }
 
     private void initListeners() {
@@ -93,24 +102,19 @@ public class Main extends JPanel {
     }
 
     private void RenderOpenCells(Point ClickPos) {
-        Point startPoint = new Point();
         Point clickedCell = GetClickedCell(ClickPos);
-        System.out.println(clickedCell);
-        if (Cell.OpenCellsCount >= 2) {
+        if (Cell.OpenCellsCount >= 1) {
             return;
         }
         if (clickedCell == null) {
             return;
         }
-        if (Cell.OpenCellsCount == 1) {
-            startPoint = clickedCell;
-        }
+
         if (Cell.cells.contains(clickedCell)) {
-            Cell.OpenCells.add(clickedCell);
             Cell.OpenCellsCount++;
-        }
-        if (Cell.OpenCellsCount == 2) {
-            Generate(startPoint, clickedCell);
+            startCell = clickedCell;
+            final Point finalStart = startCell;
+            new Thread(() -> Generate(clickedCell, finalStart)).start();
         }
         repaint();
     }
@@ -121,54 +125,70 @@ public class Main extends JPanel {
         if (Cell.cells.contains(new Point(base.x - CELL_SIZE * 2, base.y))) {
             if (!Cell.OpenCells.contains(new Point(base.x - CELL_SIZE * 2, base.y))) {
                 neighbors.add(new Point(base.x - CELL_SIZE * 2, base.y));
-                System.out.println("left");
             }
         }
         //NOTE: checks right
         if (Cell.cells.contains(new Point(base.x + CELL_SIZE * 2, base.y))) {
             if (!Cell.OpenCells.contains(new Point(base.x + CELL_SIZE * 2, base.y))) {
                 neighbors.add(new Point(base.x + CELL_SIZE * 2, base.y));
-                System.out.println("right");
             }
         }
         //NOTE: checks below
         if (Cell.cells.contains(new Point(base.x, base.y - CELL_SIZE * 2))) {
             if (!Cell.OpenCells.contains(new Point(base.x, base.y - CELL_SIZE * 2))) {
                 neighbors.add(new Point(base.x, base.y - CELL_SIZE * 2));
-                System.out.println("below");
             }
         }
         //NOTE: checks above
         if (Cell.cells.contains(new Point(base.x, base.y + CELL_SIZE * 2))) {
             if (!Cell.OpenCells.contains(new Point(base.x, base.y + CELL_SIZE * 2))) {
                 neighbors.add(new Point(base.x, base.y + CELL_SIZE * 2));
-                System.out.println("above");
             }
         }
-        System.out.println(neighbors);
         return neighbors;
     }
 
     private void Generate(Point start, Point finish) {
-        Point[] neighborArray = new Point[4];
-        int index = 0;
-        for (Point neighbor : GetClosedNeighbors(start)) {
-            System.out.println(index);
-            neighborArray[index] = neighbor;
-            index++;
+
+        Deque<Point> path = new ArrayDeque<>();
+        Set<Point> visited = new HashSet<>();
+
+        path.push(start);
+        visited.add(start);
+        Cell.OpenCells.add(start);
+
+        while (!path.isEmpty()) {
+            Point current = path.peek();
+            GenHead = path.getFirst();
+
+            List<Point> neighbors = new ArrayList<>(GetClosedNeighbors(current));
+            neighbors.removeIf(visited::contains);
+
+            if (neighbors.isEmpty()) {
+                // Backtrack — Zellen bleiben offen
+                path.pop();
+            } else {
+                int r = random(0, neighbors.size() - 1);
+                Point chosen = neighbors.get(r);
+
+                visited.add(chosen);
+                path.push(chosen);
+                Cell.OpenCells.add(chosen);
+
+                int dx = current.x - chosen.x;
+                int dy = current.y - chosen.y;
+                Point middle = new Point(chosen.x + dx / 2, chosen.y + dy / 2);
+                Cell.OpenCells.add(middle);
+
+            }
+
+            repaint();
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
-        int random = random(0, neighborArray.length - 1);
-        if (neighborArray.length != 0) {
-            Cell.OpenCells.add(neighborArray[random]);
-
-            int dx = start.x - neighborArray[random].x;
-            int dy = start.y - neighborArray[random].y;
-
-            Point middle = new Point(neighborArray[random].x + dx / 2, neighborArray[random].y + dy / 2);
-            Cell.OpenCells.add(middle);
-            System.out.println("middle: " + middle);
-        }
-
         repaint();
     }
 
